@@ -1,7 +1,5 @@
 #Atividade de Estatistica
-
 #uso de dados para fazer calculos estitisticos referente a alguma base de dados
-
 #dados usados sao provindos da STEAMAPI , uma api que fornece dados referentes a jogos disponiveis na STEAMAPI
 
 import requests
@@ -170,8 +168,51 @@ class Analyzer(object):
 
 
         return classes
-           
 
+class AnalyzerG(object):
+    lista=[]
+
+    def __init__(self, dados):
+        self.lista=dados
+    
+    def get_media(self):
+        media = 0
+        dados = 0
+        frequencias_acumulada = 0
+        for i in self.lista:
+            dados+= ((i[0]+i[1])/2)*i[2]
+            frequencias_acumulada+=i[2]
+        
+        return dados/frequencias_acumulada
+    
+    def get_mediana(self):
+        frequencia_absoluta_simples = 0
+        frequencia_acumulada_a = 0
+        ponto_medio = 0
+        somatorio = 0
+        classe_mediana = []
+        for i in self.lista:
+            frequencia_absoluta_simples+=i[2]
+        
+        ponto_medio = frequencia_absoluta_simples/2
+
+        for i in range(len(self.lista)):
+            if(frequencia_acumulada_a > frequencia_absoluta_simples/2):
+                classe_mediana = self.lista[i]
+                break
+            else:
+                frequencia_acumulada_a+=self.lista[i][2]
+            
+
+        
+        contador = 0
+        while(True):
+            for i in range(len(self.lista)):
+                for i in range(self.lista[i][2]):
+                    contador+=1
+                    if(contador == ponto_medio):
+                        return
+            
 
 
 
@@ -199,54 +240,29 @@ classes = analyzer.get_classes()
 
 
 print("   Clases   | Frequencias ")
-for i in range(len(divisoriasF)):
+for i in range(len(divisoriasF)-1):  
     print("|  %d  -  %d  | %d " %(divisoriasI[i],divisoriasF[i],len(classes[i])))
 
 games_classes = []
-frequencias_acumuladas = len(games)
+for i in range(len(divisoriasI)):
+    item = []
+    item.append(divisoriasI[i])
+    item.append(divisoriasF[i])
+    item.append(len(classes[i]))
+    games_classes.append(item[:])
 
-for i in classes[0]:
-    obj = Game("",0,60/2)
-    games_classes.append(obj)
-for i in classes[1]:
-    obj = Game("",0,180/2)
-    games_classes.append(obj)
-for i in classes[2]:
-    obj = Game("",0,300/2)
-    games_classes.append(obj)
-for i in classes[3]:
-    obj = Game("",0,420/2)
-    games_classes.append(obj)
-for i in classes[4]:
-    obj = Game("",0,540/2)
-    games_classes.append(obj)
-for i in classes[5]:
-    obj = Game("",0,660/2)
-    games_classes.append(obj)
-for i in classes[6]:
-    obj = Game("",0,780/2)
-    games_classes.append(obj)
-for i in classes[7]:
-    obj = Game("",0,900/2)
-    games_classes.append(obj)
-for i in classes[8]:
-    obj = Game("",0,1020/2)
-    games_classes.append(obj)
-for i in classes[9]:
-    obj = Game("",0,1140/2)
-    games_classes.append(obj)
 
-analyzer2=Analyzer(games_classes)
+analyzer2=AnalyzerG(games_classes)
 
 
 
 
 print("Media:###################### %.2f" % analyzer2.get_media())
-print("Mediana:#################### %.2f" % analyzer2.get_mediana())
-print("Moda:####################### %.2f" % analyzer2.get_modinha())
-print("Variancia^2:################ %.2f" % analyzer2.get_variancia())
-print("Desvio padrao:############## %.4f" % analyzer2.get_desvio_padrao())
-print("Coeficiente de variacao:#### %.2f%%" % analyzer2.get_coeficiente_de_variacao())
+# print("Mediana:#################### %.2f" % analyzer2.get_mediana())
+# print("Moda:####################### %.2f" % analyzer2.get_modinha())
+# print("Variancia^2:################ %.2f" % analyzer2.get_variancia())
+# print("Desvio padrao:############## %.4f" % analyzer2.get_desvio_padrao())
+# print("Coeficiente de variacao:#### %.2f%%" % analyzer2.get_coeficiente_de_variacao())
 
 
 print("\n")
@@ -262,5 +278,5 @@ for i in games:
 
 bins = [60,120,180,240,300,360,420,480,540,600]
 
-plt.hist(precos, bins, histtype="bar", rwidth=0.5, label=[0,1,2,3,4,5] )
+plt.hist(precos, bins, histtype="bar", rwidth=0.5, label=[0,1,2,3,4,5,6,7,8,9] )
 plt.show()
