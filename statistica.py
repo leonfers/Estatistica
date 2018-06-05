@@ -9,13 +9,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Para pegar dados online
-# base_url = "http://steamspy.com/api.php?request="
-# response = requests.get(base_url+"all")
-# data = json.loads(response.text)
+base_url = "http://steamspy.com/api.php?request="
+response = requests.get(base_url+"all")
+data = json.loads(response.text)
 
-with open('api.php.json') as json_file:
-    text = json_file.read()
-    data = json.loads(text)
+# with open('api.php.json') as json_file:
+#     text = json_file.read()
+#     data = json.loads(text)
 
 games = []
 
@@ -74,7 +74,7 @@ class Analyzer(object):
         for i in self.lista:
             total=total+i.price
         
-        return total/self.get_size()
+        return total/float(self.get_size())
     
     def get_mediana(self):
         self.lista.sort(key=lambda x: x.price)
@@ -130,7 +130,7 @@ class Analyzer(object):
         soma_total_amostras = 0
         for i in self.lista:
             soma_total_amostras += (i.price - media)**2
-        return soma_total_amostras/len(self.lista)
+        return soma_total_amostras/float(len(self.lista))
     
     def get_desvio_padrao(self):
         return self.get_variancia()**0.5
@@ -140,32 +140,17 @@ class Analyzer(object):
     
     def get_classes(self):
         self.lista.sort(key=lambda x: x.price)
-        classes= [[],[],[],[],[],[],[],[],[],[]]
-        divisoriasI=[0,60,120,180,240,300,360,420,480,540]
-        divisoriasF=[60,120,180,240,300,360,420,480,540,600]
-        contador = 0
-        for i in self.lista:
-            if(divisoriasI[0]<=i.price<divisoriasF[0]):
-                classes[0].append(i)
-            elif(divisoriasI[1]<=i.price<divisoriasF[1]):
-                classes[1].append(i)
-            elif(divisoriasI[2]<=i.price<divisoriasF[2]):
-                classes[2].append(i)
-            elif(divisoriasI[3]<=i.price<divisoriasF[3]):
-                classes[3].append(i)
-            elif(divisoriasI[4]<=i.price<divisoriasF[4]):
-                classes[4].append(i)
-            elif(divisoriasI[5]<=i.price<divisoriasF[5]):
-                classes[5].append(i)
-            elif(divisoriasI[6]<=i.price<divisoriasF[6]):
-                classes[6].append(i)
-            elif(divisoriasI[7]<=i.price<divisoriasF[7]):
-                classes[7].append(i)
-            elif(divisoriasI[8]<=i.price<divisoriasF[8]):
-                classes[8].append(i)
-            elif(divisoriasI[9]<=i.price<divisoriasF[9]):
-                classes[9].append(i)
+        classes=[]
+        classe=[]
+        divisoriasI=[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570]
+        divisoriasF=[30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
+        for i in range(len(divisoriasI)):
+            classes.append(classe[:])
 
+        for j in self.lista:
+            for i in range(len(divisoriasI)-1):
+                if(divisoriasI[i]<=j.price<divisoriasF[i]):
+                    classes[i].append(j)
 
         return classes
 
@@ -176,44 +161,67 @@ class AnalyzerG(object):
         self.lista=dados
     
     def get_media(self):
-        media = 0
         dados = 0
-        frequencias_acumulada = 0
         for i in self.lista:
-            dados+= ((i[0]+i[1])/2)*i[2]
-            frequencias_acumulada+=i[2]
+            dados += (float(i[0]+i[1])/2)*i[2]
+        frequencias_acumulada = self.get_somatorio_frequencia_absoluta()
         
-        return dados/frequencias_acumulada
+        return float(dados)/frequencias_acumulada
     
     def get_mediana(self):
-        frequencia_absoluta_simples = 0
-        frequencia_acumulada_a = 0
-        ponto_medio = 0
-        somatorio = 0
+        somatorio_frequencia_absoluta_simples = self.get_somatorio_frequencia_absoluta()
+        frequencia_acumulada_anterior = 0
         classe_mediana = []
-        for i in self.lista:
-            frequencia_absoluta_simples+=i[2]
         
-        ponto_medio = frequencia_absoluta_simples/2
 
         for i in range(len(self.lista)):
-            if(frequencia_acumulada_a > frequencia_absoluta_simples/2):
+            frequencia_acumulada_anterior+=self.lista[i][2]
+            if(frequencia_acumulada_anterior > somatorio_frequencia_absoluta_simples/2):
                 classe_mediana = self.lista[i]
+                frequencia_acumulada_anterior -= classe_mediana[2]
                 break
-            else:
-                frequencia_acumulada_a+=self.lista[i][2]
+                
+
+        return (classe_mediana[0]+((float((somatorio_frequencia_absoluta_simples/2)-frequencia_acumulada_anterior))/classe_mediana[2])*(classe_mediana[1]-classe_mediana[0]))
             
 
         
-        contador = 0
-        while(True):
-            for i in range(len(self.lista)):
-                for i in range(self.lista[i][2]):
-                    contador+=1
-                    if(contador == ponto_medio):
-                        return
             
+    def get_moda(self):
+        classe_modal=[]
+        for i in range(len(self.lista)):
+            if classe_modal == []:
+                classe_modal = self.lista[i]
+            elif self.lista[i][2] > classe_modal[2]:
+                classe_modal = self.lista[i]
+        return (float(classe_modal[0]+classe_modal[1]))/2
 
+    def get_variancia(self):
+
+        s=0
+        s2=0
+        for i in self.lista:
+            s2+=i[2]*((i[0]+i[1])/2)**2
+
+        for i in self.lista:
+            s+=i[2]*((i[0]+i[1])/2)
+        s=float(s)
+        s2=float(s2)
+        return (float(s2-(float((s**2))/self.get_somatorio_frequencia_absoluta())))/float(self.get_somatorio_frequencia_absoluta()-1)
+
+    def get_desvio_padrao(self):
+        return self.get_variancia()**0.5
+    
+    def get_coeficiente_de_variacao(self):
+        return 100*(self.get_desvio_padrao()/self.get_media())
+
+
+    def get_somatorio_frequencia_absoluta(self):
+        f=0
+        for i in self.lista:
+            f+=i[2]
+        
+        return f
 
 
 analyzer = Analyzer(games)
@@ -233,11 +241,13 @@ print("Desvio padrao:############## %.4f" % analyzer.get_desvio_padrao())
 print("Coeficiente de variacao:#### %.2f%%" % analyzer.get_coeficiente_de_variacao())
 print("################################################")
 
-divisoriasI=[0,60,120,180,240,300,360,420,480,540]
-divisoriasF=[60,120,180,240,300,360,420,480,540,600]
-
 classes = analyzer.get_classes()
 
+classe_de_teste = [[50,54,4],[54,58,9],[58,62,11],[62,66,8],[66,70,5],[70,74,3]]
+
+
+divisoriasI=[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570]
+divisoriasF=[30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
 
 print("   Clases   | Frequencias ")
 for i in range(len(divisoriasF)-1):  
@@ -252,17 +262,17 @@ for i in range(len(divisoriasI)):
     games_classes.append(item[:])
 
 
-analyzer2=AnalyzerG(games_classes)
+analyzer2=AnalyzerG(classe_de_teste)
 
 
 
 
 print("Media:###################### %.2f" % analyzer2.get_media())
-# print("Mediana:#################### %.2f" % analyzer2.get_mediana())
-# print("Moda:####################### %.2f" % analyzer2.get_modinha())
-# print("Variancia^2:################ %.2f" % analyzer2.get_variancia())
-# print("Desvio padrao:############## %.4f" % analyzer2.get_desvio_padrao())
-# print("Coeficiente de variacao:#### %.2f%%" % analyzer2.get_coeficiente_de_variacao())
+print("Mediana:#################### %.2f" % analyzer2.get_mediana())
+print("Moda:####################### %.2f" % analyzer2.get_moda())
+print("Variancia^2:################ %.2f" % analyzer2.get_variancia())
+print("Desvio padrao:############## %.4f" % analyzer2.get_desvio_padrao())
+print("Coeficiente de variacao:#### %.2f%%" % analyzer2.get_coeficiente_de_variacao())
 
 
 print("\n")
@@ -276,7 +286,7 @@ precos = []
 for i in games:
     precos.append(i.price)
 
-bins = [60,120,180,240,300,360,420,480,540,600]
+bins = [0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
 
-plt.hist(precos, bins, histtype="bar", rwidth=0.5, label=[0,1,2,3,4,5,6,7,8,9] )
+plt.hist(precos, bins, histtype="bar", rwidth=0.5, label=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21] )
 plt.show()
