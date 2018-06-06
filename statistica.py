@@ -9,13 +9,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Para pegar dados online
-base_url = "http://steamspy.com/api.php?request="
-response = requests.get(base_url+"all")
-data = json.loads(response.text)
+# base_url = "http://steamspy.com/api.php?request="
+# response = requests.get(base_url+"all")
+# data = json.loads(response.text)
 
-# with open('api.php.json') as json_file:
-#     text = json_file.read()
-#     data = json.loads(text)
+with open('api.php.json') as json_file:
+    text = json_file.read()
+    data = json.loads(text)
 
 games = []
 
@@ -35,7 +35,8 @@ class Game(object):
 
 for i in data:
     obj = Game(data[i]['name'],int(data[i]['userscore']),float(data[i]['price'])/100)
-    games.append(obj)
+    if(obj.price<=60):
+        games.append(obj)
 
 class Analyzer(object):
     lista=[]
@@ -142,13 +143,23 @@ class Analyzer(object):
         self.lista.sort(key=lambda x: x.price)
         classes=[]
         classe=[]
-        divisoriasI=[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570]
-        divisoriasF=[30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
+        contador = 0
+        divisoriasI=[]
+        for i in range(15):
+            divisoriasI.append(contador)
+            contador+=4
+        
+        divisoriasF=[]
+        contador=4
+        for i in range(15):
+            divisoriasF.append(contador)
+            contador+=4
+       
         for i in range(len(divisoriasI)):
             classes.append(classe[:])
 
         for j in self.lista:
-            for i in range(len(divisoriasI)-1):
+            for i in range(len(divisoriasI)):
                 if(divisoriasI[i]<=j.price<divisoriasF[i]):
                     classes[i].append(j)
 
@@ -246,11 +257,20 @@ classes = analyzer.get_classes()
 classe_de_teste = [[50,54,4],[54,58,9],[58,62,11],[62,66,8],[66,70,5],[70,74,3]]
 
 
-divisoriasI=[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570]
-divisoriasF=[30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
+contador = 0
+divisoriasI=[]
+for i in range(15):
+    divisoriasI.append(contador)
+    contador+=4
+        
+divisoriasF=[]
+contador=4
+for i in range(15):
+    divisoriasF.append(contador)
+    contador+=4
 
 print("   Clases   | Frequencias ")
-for i in range(len(divisoriasF)-1):  
+for i in range(len(divisoriasF)):  
     print("|  %d  -  %d  | %d " %(divisoriasI[i],divisoriasF[i],len(classes[i])))
 
 games_classes = []
@@ -262,7 +282,7 @@ for i in range(len(divisoriasI)):
     games_classes.append(item[:])
 
 
-analyzer2=AnalyzerG(classe_de_teste)
+analyzer2=AnalyzerG(games_classes)
 
 
 
@@ -286,7 +306,7 @@ precos = []
 for i in games:
     precos.append(i.price)
 
-bins = [0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540,570,600]
+bins = divisoriasI
 
-plt.hist(precos, bins, histtype="bar", rwidth=0.5, label=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21] )
+plt.hist(precos, bins, histtype="bar", rwidth=0.5 )
 plt.show()
