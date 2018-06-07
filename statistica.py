@@ -9,13 +9,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Para pegar dados online
-# base_url = "http://steamspy.com/api.php?request="
-# response = requests.get(base_url+"all")
-# data = json.loads(response.text)
+base_url = "http://steamspy.com/api.php?request="
+response = requests.get(base_url+"all")
+data = json.loads(response.text)
 
-with open('api.php.json') as json_file:
-    text = json_file.read()
-    data = json.loads(text)
+# with open('api.php.json') as json_file:
+#     text = json_file.read()
+#     data = json.loads(text)
 
 games = []
 
@@ -116,6 +116,7 @@ class Analyzer(object):
                         frequencias.append(dados[:])
                 else:
                     dados.append(i)
+    
         return frequencias
     
     def get_modinha(self):
@@ -234,6 +235,31 @@ class AnalyzerG(object):
         
         return f
 
+class gerarTabela():
+    lista = []
+
+    def __init__(self, lista):
+        self.lista = lista
+    
+    def get_tabela(self):
+        frequencias_acumulada = 0
+        
+        for i in self.lista:
+            frequencias_acumulada+=i[2]
+            i.append(frequencias_acumulada)       
+            
+
+        for i in self.lista:
+            i.append(i[2]/float(frequencias_acumulada))
+        
+        acumulador = 0
+        for i in self.lista:
+            acumulador+=i[4]
+            i.append(acumulador)    
+                
+        return self.lista
+
+
 
 analyzer = Analyzer(games)
 
@@ -254,9 +280,6 @@ print("################################################")
 
 classes = analyzer.get_classes()
 
-classe_de_teste = [[50,54,4],[54,58,9],[58,62,11],[62,66,8],[66,70,5],[70,74,3]]
-
-
 contador = 0
 divisoriasI=[]
 for i in range(15):
@@ -269,10 +292,6 @@ for i in range(15):
     divisoriasF.append(contador)
     contador+=4
 
-print("   Clases   | Frequencias ")
-for i in range(len(divisoriasF)):  
-    print("|  %d  -  %d  | %d " %(divisoriasI[i],divisoriasF[i],len(classes[i])))
-
 games_classes = []
 for i in range(len(divisoriasI)):
     item = []
@@ -280,6 +299,15 @@ for i in range(len(divisoriasI)):
     item.append(divisoriasF[i])
     item.append(len(classes[i]))
     games_classes.append(item[:])
+
+
+games_classes = gerarTabela(games_classes).get_tabela()
+
+print("   Clases   | fi     | Fi    | fri    |  Fri  | ")
+for i in games_classes:  
+    print("|  %d  -  %d  | %d  | %d | %.2f%%  | %.2f%% |" %(i[0],i[1],i[2],i[3],i[4]*100,i[5]*100))
+
+
 
 
 analyzer2=AnalyzerG(games_classes)
@@ -296,10 +324,7 @@ print("Coeficiente de variacao:#### %.2f%%" % analyzer2.get_coeficiente_de_varia
 
 
 print("\n")
-print("Pela comparacao da media e da mediana, no caso a minha ")
-print("selecao de dados teve uma grande mudanca, mas isso ocorreu")
-print("devido a alta concentracao na clases")
-print("mas percebes que pela divisao das clases, ambas permaneceram na mesma area")
+print("Os resultados foram similares, onde e possivel abstrair a bservao simlar de ambos ")
 
 precos = []
 
